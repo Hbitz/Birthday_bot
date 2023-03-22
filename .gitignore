@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL-files
+__pycache__/
+.idea
+
+# Specific files to ignore
+config.py
+birthdays.db
+error_logs.txt
