@@ -25,6 +25,14 @@ def save_to_db(name, date, gift='No', reminder=0):  # Add into db
         write_error_to_file(e)  # If any error is causes, append to textfile
 
 
+def delete_from_db(id):
+    con = sqlite3.connect(db_path)
+    cursor = con.cursor()
+    cursor.execute('DELETE FROM bdays WHERE ID=?', id)
+    con.commit()
+    return f'Removed {str(cursor.rowcount)}.'  # Returns a formated string of the affected row from our database
+
+
 def write_error_to_file(e):  # Append error message to a textfile
     try:
         f = open('error_logs.txt', 'a')  # Appends if exists, otherwise creates the file
