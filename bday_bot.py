@@ -2,6 +2,8 @@ import discord
 from config import config as CONFIG
 from database_handler import *
 import datetime
+import aiocron
+
 
 
 # Set up intents for discord bot
@@ -150,8 +152,6 @@ async def on_message(message):
         await send_notification()
 
 
-
-
 async def send_notification(message=None):
     # Update global variables(should be done in cronjob later on)
     all_birthdays = load_all_from_db()
@@ -194,6 +194,22 @@ async def send_notification(message=None):
 
     #channel = await user.create_dm()  # Create DM with user
     #await channel.send(s)  # Send our message
+
+
+async def update_globals():
+    global all_birthdays
+    all_birthdays = load_all_from_db()
+
+
+# A cronjob is something that is run automatically at set intervals.
+# https://crontab.guru/ for more info on format
+# "minute hour day(month) month day(week)"
+# "0 9 * * *" means to run this at 9:00 every day
+@aiocron.crontab('0 9 * * *', start=False)
+async def cronjob1():
+    await update_globals()  # Update globals.   # todo Do we need this? We could just update on every change in db?
+    await send_notification()  # Send notifications
+
 
 
 client.run(CONFIG['DISCORD']['CLIENT_TOKEN'])
