@@ -3,7 +3,7 @@
     * user/channel authorization - Restrict commands to specific user or channels
     * Add alert - Done
     * DM user - Done
-    * Logic for notifications - Done~ (Cleaning and formatting needed)
+    * Logic for notifications - Done~ (Cleaning todo)
 
 * database_handler_py
     * edit
@@ -13,4 +13,6 @@
 * cronjob
     Automatically check notifications every day and DMs user
 
+* other
+    * Add support to connect alerts to individual users (For servers or friends?)
 '''

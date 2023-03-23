@@ -25,13 +25,28 @@ def save_to_db(name, date, gift='No', reminder=0):  # Add into db
         write_error_to_file(e)  # If any error is causes, append to textfile
 
 
-def delete_from_db(id):
-    con = sqlite3.connect(db_path)
-    cursor = con.cursor()
-    cursor.execute('DELETE FROM bdays WHERE ID=?', id)
-    con.commit()
-    return f'Removed {str(cursor.rowcount)}.'  # Returns a formated string of the affected row from our database
+def update_alert(_id, name, date, gift, reminder):
+    try:
+        con = sqlite3.connect(db_path)
+        cursor = con.cursor()
+        cursor.execute("UPDATE bdays SET name=?, date=?, gift=?, reminder=? WHERE ID=?", (name, date, gift, reminder, _id))
+        con.commit()
+    except Exception as e:
+        print('Failed to update record, received error: ', e)
+        write_error_to_file(e)
 
+
+def delete_from_db(_id):
+    try:
+        print(';;', type(_id))
+        con = sqlite3.connect(db_path)
+        cursor = con.cursor()
+        cursor.execute("DELETE FROM bdays WHERE ID=?", (_id,))  # _id needs to be in a tuple (), even if it's just one value
+        con.commit()
+        return f'Removed {str(cursor.rowcount)}.'  # Returns a formated string of the affected row from our database
+    except Exception as e:
+        print('Failed to delete record, received error: ', e)
+        write_error_to_file(e)
 
 def write_error_to_file(e):  # Append error message to a textfile
     try:

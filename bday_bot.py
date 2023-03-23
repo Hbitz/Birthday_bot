@@ -27,6 +27,7 @@ async def on_ready():  # When bot is started
 # This function runs every time there's a new message in any of the channel the bot has access to
 @client.event
 async def on_message(message):
+    global all_birthdays
     if message.author == client.user:  # If a text msg is sent by the bot, never do any more commands
         return
 
@@ -74,7 +75,11 @@ async def on_message(message):
             return await message.channel.send('You need to enter a numerical value.')
 
         s = delete_from_db(id)
-        return await message.channel.send(f'Deleted: ', s)
+
+        #global all_birthdays  # After a deletion, update our global variables so we don't keep using old data.
+        all_birthdays = load_all_from_db()
+
+        return await message.channel.send(f'Deleted:  {s}')
 
     if message.content.startswith('!add'):
         msg = message.content[5:]  # Remove first 5 letters,"!add ", for convenience.
@@ -107,7 +112,44 @@ async def on_message(message):
 
         # Save our data to the database
         save_to_db(name, date, gift=gift, reminder=reminder)
-        return await message.channel.send('Data was clean and was hopefully saved to db')
+        all_birthdays = load_all_from_db()  # Update global variable with fresh data
+        return await message.channel.send('Data was clean and was hopefully saved to db')  # Todo reponse of result
+
+    # This is using same logic as !add, got much duplicated code atm
+    if message.content.startswith('!edit'):
+        msg = message.content[6:]  # Remove the "!edit " for easier handling.
+        bday_id, name, date, *extra = msg.split(' ')
+
+        try:
+            bday_id = int(bday_id)
+        except ValueError:
+            return await message.channel.send('The ID must be a numerical value.')
+
+        try:
+            datetime.date.fromisoformat(date)
+        except ValueError:
+            return await message.channel.send('The date format is not correct')
+
+        # set default values
+        gift = 'No'
+        reminder = 0
+
+        # Verify and handle extra data, if any, to overwrite the default values
+        if len(extra) > 0:
+            gift = extra[0].capitalize()  # Gets the first element of our extra data
+            if gift != 'Yes' and gift != 'No':
+                return await message.channel.send(f'Gift should be a "Yes/No" value. You wrote "{gift}".')
+            if len(extra) > 1:  # If user also set a reminder of x days ahead
+                try:
+                    reminder = int(extra[1])
+                except ValueError:
+                    return await message.channel.send(
+                        f'Reminder(days ahead) should be numerical value. You entered {extra[1]}')
+
+        # Save our data to the database
+        update_alert(bday_id, name, date, gift=gift, reminder=reminder)
+        all_birthdays = load_all_from_db()  # Update global variable with fresh data from db
+        return await message.channel.send('Data was clean and was hopefully updated to db')
 
     if message.content.startswith('!test'):
         await send_notification()
@@ -116,6 +158,9 @@ async def on_message(message):
 
 
 async def send_notification(message=None):
+    # Update global variables(should be done in cronjob later on)
+    all_birthdays = load_all_from_db()
+
     # Setup
     today = datetime.datetime.today()  # Get string of today in YYYY-mm-dd format
     today_str = datetime.datetime.today().strftime('%Y-%m-%d')  # Get string of today in YYYY-mm-dd format
@@ -154,15 +199,20 @@ async def send_notification(message=None):
             next_birthday = next_birthday.replace(year=today.year + 1)
         # Datetime rounds down, so a birthday in 23:59:59 counts as 0, which is today. So we add + 1
         days_until_birthday = (next_birthday - today).days + 1
-        print(days_until_birthday)
+        #print(days_until_birthday, bday[0])
 
+        # A bday is currently a list of [id, name, date, gift, reminder)
         if days_until_birthday == 0:
-            s += str(bday)
-            print('today note', str(bday))
-        elif days_until_birthday == 0 + int(bday[4]):
-            s += str(bday)
-            print('reminder note')
-
+            s += str(f'{bday[1]} is turning {years} today.')
+            if bday[3] == 'Yes':
+                s += ' Remember to get a gift.'
+            s += f' [ID:{bday[0]}]\n'
+        elif days_until_birthday == int(bday[4]):
+            years = next_birthday.year - bday_date.year  # Calculate how many years old they are turning
+            s += str(f'{bday[1]} is turning {years} in {bday[4]} days.')
+            if bday[3] == 'Yes':
+                s += ' Remember to get a gift.'
+            s += f' [ID:{bday[0]}]\n'
 
     msg_to_send = s
     print(msg_to_send)
