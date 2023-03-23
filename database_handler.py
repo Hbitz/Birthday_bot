@@ -48,6 +48,7 @@ def delete_from_db(_id):
         print('Failed to delete record, received error: ', e)
         write_error_to_file(e)
 
+
 def write_error_to_file(e):  # Append error message to a textfile
     try:
         f = open('error_logs.txt', 'a')  # Appends if exists, otherwise creates the file

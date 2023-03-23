@@ -31,7 +31,6 @@ async def on_message(message):
     if message.author == client.user:  # If a text msg is sent by the bot, never do any more commands
         return
 
-    #print(message.content)
     # test msg
     if message.content.startswith('test'):
         return await message.channel.send('hello')
@@ -57,7 +56,6 @@ async def on_message(message):
         return await message.channel.send(s)
 
     if message.content.startswith('!everybday'):
-        #bdays = load_all_from_db()
         bdays = all_birthdays
         s = ''
         for bday in bdays:
@@ -75,10 +73,7 @@ async def on_message(message):
             return await message.channel.send('You need to enter a numerical value.')
 
         s = delete_from_db(id)
-
-        #global all_birthdays  # After a deletion, update our global variables so we don't keep using old data.
-        all_birthdays = load_all_from_db()
-
+        all_birthdays = load_all_from_db()  # Update global variable so we keep using fresh data
         return await message.channel.send(f'Deleted:  {s}')
 
     if message.content.startswith('!add'):
@@ -163,33 +158,11 @@ async def send_notification(message=None):
 
     # Setup
     today = datetime.datetime.today()  # Get string of today in YYYY-mm-dd format
-    today_str = datetime.datetime.today().strftime('%Y-%m-%d')  # Get string of today in YYYY-mm-dd format
 
-    #today2 = datetime.date.today()
-    #print('today-',today, ',', type(today))
     user = client.get_user(CONFIG['DISCORD']['MY_USER']['ID'])
     s = ''
 
-    #for bday in all_birthdays:
-    #    s += str(bday)
     for bday in all_birthdays:
-        '''
-        # A birthday is currently a list of [id, name, date, gift, reminder)
-        #bday_date = datetime.date() bday[2].strftime('')
-        print()
-        print(bday[2])
-        print('today:', today, type(today))
-        #bday_date = datetime.datetime.strftime(bday[2], '%Y-%m-%d')
-        bday_date = datetime.datetime.strptime(bday[2], '%Y-%m-%d')
-        #t3 = da
-        #print(f'today % bday: {today} % {bday_date}')
-        print('bday_date: ', bday_date, ',', type(bday_date))
-
-        remaining_days = bday_date - today
-        print(remaining_days)
-        print(remaining_days.days)
-        '''
-
         # Create datetime object from the string value
         bday_date = datetime.datetime.strptime(bday[2], '%Y-%m-%d')  # strptime to format string to datetime object
 
@@ -197,17 +170,19 @@ async def send_notification(message=None):
         next_birthday = bday_date.replace(year=today.year)  # Replace birthyear with current year
         if next_birthday < today:  # If birthday has already been this year
             next_birthday = next_birthday.replace(year=today.year + 1)
-        # Datetime rounds down, so a birthday in 23:59:59 counts as 0, which is today. So we add + 1
-        days_until_birthday = (next_birthday - today).days + 1
-        #print(days_until_birthday, bday[0])
 
-        # A bday is currently a list of [id, name, date, gift, reminder)
-        if days_until_birthday == 0:
+        # Datetime rounds down, so 23:59:59 in the future still only counts as 0, which is today.
+        # So we add + 1 to get the next day.
+        days_until_birthday = (next_birthday - today).days + 1
+
+        # Reminder: A bday is currently a list of [id, name, date, gift, reminder)
+        # Todo - Lots of duplicated code. Can this be reduced?
+        if days_until_birthday == 0:  # Check if someone has their birthday today
             s += str(f'{bday[1]} is turning {years} today.')
             if bday[3] == 'Yes':
                 s += ' Remember to get a gift.'
             s += f' [ID:{bday[0]}]\n'
-        elif days_until_birthday == int(bday[4]):
+        elif days_until_birthday == int(bday[4]):  # Check if we have an alert set up X days in advance for the birthday.
             years = next_birthday.year - bday_date.year  # Calculate how many years old they are turning
             s += str(f'{bday[1]} is turning {years} in {bday[4]} days.')
             if bday[3] == 'Yes':
