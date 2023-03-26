@@ -17,4 +17,5 @@
     * database export/import - Done
     * Basic setup/readme instructions
     * Add support to connect alerts to individual users (For servers or friends?)
+    * Backup data?  Cronjob with SCP/SFTP?
 '''
