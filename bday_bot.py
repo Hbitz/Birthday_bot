@@ -64,6 +64,57 @@ async def on_message(message):
             s += str(bday) + '\n'
         return await message.channel.send(s)
 
+    if message.content.startswith('!month'):  # If we want to see all birthdays in a month
+        months = {
+            'January': '01',
+            'February': '02',
+            'March': '03',
+            'April': '04',
+            'May': '05',
+            'June': '06',
+            'July': '07',
+            'August': '08',
+            'September': '09',
+            'October': '10',
+            'November': '11',
+            'December': '12'
+        } # Support for both English and Swedish. This is high quality coding.
+        swedish_months = {
+            'Januari': '01',
+            'Februari': '02',
+            'Mars': '03',
+            'April': '04',
+            'Maj': '05',
+            'Juni': '06',
+            'Juli': '07',
+            'Augusti': '08',
+            'September': '09',
+            'Oktober': '10',
+            'November': '11',
+            'December': '12'
+        }
+        msg= message.content[7:].capitalize()
+
+        month_number = 0  # Set a default value
+        # Now overwrite value depending on month.  Sets a value in string format '01'
+        if msg in months:
+            month_number = months[msg]
+        elif msg in swedish_months:
+            month_number = swedish_months[msg]
+        else:  # If the input is not a valid month, stop function here and notify user
+            return await message.channel.send('That is not a valid month')
+
+        results = load_specific_month(month_number)  # Now load all birthdays for that month
+        s = "ID\tBirthday\tGift\tReminder\tName\n"  # Let's create a nice format/table to display all results
+        # Todo - Explore string formatting with fixed lengths.
+        for r in results:
+            s += f'{r[0]}\t{r[2]}\t{r[3]}\t{r[4]}\t{r[1]}\n'  # Name at end, so the rest if formatted better.
+        return await message.channel.send(s)
+
+
+
+
+
     if message.content.startswith('!delete'):  # Delete alert based on ID
         _, id = message.content.split(' ')  # Split msg on ' '.
         # _ = "!delete", id = <our_input>
