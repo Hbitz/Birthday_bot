@@ -238,8 +238,11 @@ async def send_notification(message=None):
     msg_to_send = s
     print(msg_to_send)
 
-    channel = await user.create_dm()  # Create DM with user
-    await channel.send(msg_to_send)  # Send our message
+    if msg_to_send:  # Check if it's not empty
+        channel = await user.create_dm()  # Create DM with user
+        return await channel.send(msg_to_send)  # Send our message
+    else:
+        print('Local temporary print - no alerts at this time~~')
 
 
 async def update_globals():
