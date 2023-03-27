@@ -16,16 +16,11 @@ def load_all_from_db():  # Load all bdays from database
 def load_specific_month(month_number):  # Load all bdays from a specific month
     con = sqlite3.connect(db_path)
     cursor = con.cursor()
-    ###query = "SELECT * FROM bdays WHERE MONTH(Date)=?"  # We don't use ", (month, )" after the Date=?
-    ### Cursor.execute expects a string, not a tuple, so we send our tuple with our month here instead
-    ###r = cursor.execute(query, ('3',)).fetchall()
 
     query = "SELECT * FROM bdays WHERE Date LIKE '____-" + month_number + "-%' ORDER By SUBSTR(Date, 9, 2) ASC"
     # SUBSTR(Date, 9, 2) means we start extracting 2 characters from the string, starting from position 9.
     # In other words, we don't sort by full age, but only by their day.
-    # This results that people that are born on March 5th, 2010 comes before people born on March 8th, 1990.
     r = cursor.execute(query).fetchall()
-    print('db r: ', r)
     return r
 
 

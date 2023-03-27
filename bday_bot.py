@@ -5,13 +5,12 @@ import datetime
 import aiocron
 
 
-
 # Set up intents for discord bot
 my_intents = discord.Intents.default()  # Loads the default intents(permissions, basically)
 my_intents.members = True  # Be able to see the members in the server, required to get ID to be able to DB uesrs
 my_intents.message_content = True  # Allows bot to see the content of messages sent
 
-my_intents.all()
+# my_intents.all()
 
 client = discord.Client(intents=my_intents)
 
@@ -111,21 +110,17 @@ async def on_message(message):
             s += f'{r[0]}\t{r[2]}\t{r[3]}\t{r[4]}\t{r[1]}\n'  # Name at end, so the rest if formatted better.
         return await message.channel.send(s)
 
-
-
-
-
     if message.content.startswith('!delete'):  # Delete alert based on ID
-        _, id = message.content.split(' ')  # Split msg on ' '.
+        _, bday_id = message.content.split(' ')  # Split msg on ' '.
         # _ = "!delete", id = <our_input>
 
         # Verify input id
         try:
-            id = int(id)
+            bday_id = int(bday_id)
         except ValueError:
             return await message.channel.send('You need to enter a numerical value.')
 
-        s = delete_from_db(id)
+        s = delete_from_db(bday_id)
         all_birthdays = load_all_from_db()  # Update global variable so we keep using fresh data
         return await message.channel.send(f'Deleted:  {s}')
 
@@ -243,8 +238,8 @@ async def send_notification(message=None):
     msg_to_send = s
     print(msg_to_send)
 
-    #channel = await user.create_dm()  # Create DM with user
-    #await channel.send(s)  # Send our message
+    channel = await user.create_dm()  # Create DM with user
+    await channel.send(msg_to_send)  # Send our message
 
 
 async def update_globals():
