@@ -221,9 +221,27 @@ async def send_notification(message=None):
         # So we add + 1 to get the next day.
         days_until_birthday = (next_birthday - today).days + 1
 
+
+
+
+        ## Todo - Temporary solution.
+        # We both need to check if a birthday is today, or if it's reminder(of next year) should be sent.
+        # The first check is obvious(Now implemented via str of datetimeboject[5:10] to get the "mm-dd".
+        # The second would be if it's December 25st & you have a reminder for your friend's birthday in 10 days(next year).
+        if str(bday_date)[5:10] == str(datetime.datetime.today())[5:10]:
+            years = next_birthday.year - bday_date.year  # Calculate how many years old they are turning
+            s += str(f'{bday[1]} is turning {years} today.')
+            if bday[3] == 'Yes':
+                s += ' Remember to get a gift.'
+            s += f' [ID:{bday[0]}]\n'
+
+
         # Reminder: A bday is currently a list of [id, name, date, gift, reminder)
         # Todo - Lots of duplicated code. Can this be reduced?
-        if days_until_birthday == 0:  # Check if someone has their birthday today
+        ###print('\n', bday, ', days til bday: ', days_until_birthday, ':    ', end='')
+        elif days_until_birthday == 0 or days_until_birthday == -1:  # Check if someone has their birthday today. Todo: Is "-1" redundant?
+
+            years = next_birthday.year - bday_date.year  # Calculate how many years old they are turning
             s += str(f'{bday[1]} is turning {years} today.')
             if bday[3] == 'Yes':
                 s += ' Remember to get a gift.'
