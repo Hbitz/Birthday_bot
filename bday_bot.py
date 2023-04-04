@@ -277,6 +277,6 @@ async def cronjob1():
     await update_globals()  # Update globals.   # todo Do we need this? We could just update on every change in db?
     await send_notification()  # Send notifications
 
-
+cronjob1.start()
 
 client.run(CONFIG['DISCORD']['CLIENT_TOKEN'])
